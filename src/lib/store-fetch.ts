@@ -143,27 +143,11 @@ export async function fetchFromStore(
     result.nameEn = translated;
     result.assetTypes = ["Featuring"];
 
-    // Extract hero image
-    const heroMatch = pageHtml.match(/"heroMedia"[\s\S]*?"template"\s*:\s*"(https:\/\/is\d+-ssl\.mzstatic\.com\/image\/thumb\/Features[^"]+)"/);
-    if (heroMatch) {
-      let base = heroMatch[1];
-      if (base.includes("{w}")) base = base.replace(/\/\{w\}.*$/, "");
-      else base = base.replace(/\/[^/]*$/, "");
+    // Extract the card/cover image from og:image meta tag
+    const ogMatch = pageHtml.match(/<meta\s+property="og:image"\s+content="(https:\/\/is\d+-ssl\.mzstatic\.com\/image\/thumb\/[^"]+)"/i);
+    if (ogMatch) {
+      let base = ogMatch[1].replace(/\/[^/]*$/, "");
       result.screenshots.push(base + "/1050x1400sr.webp");
-    }
-
-    // Extract all featuring URLs
-    const featureUrlRegex = /https:\/\/is\d+-ssl\.mzstatic\.com\/image\/thumb\/Features[^"'\s)]+/g;
-    const allFeatureUrls = [...new Set(pageHtml.match(featureUrlRegex) || [])];
-
-    for (const fUrl of allFeatureUrls) {
-      let base = fUrl;
-      if (base.includes("{w}")) base = base.replace(/\/\{w\}.*$/, "");
-      else base = base.replace(/\/[^/]*$/, "");
-      const full = base + "/1050x1400sr.webp";
-      if (!result.screenshots.includes(full)) {
-        result.screenshots.push(full);
-      }
     }
 
     // Check for In-App Events
@@ -193,7 +177,7 @@ export async function fetchFromStore(
       result.category = app.primaryGenreName || "Other";
     }
 
-    result.assetTypes = ["In-App Events"];
+    result.assetTypes = ["In-App Events", "Featuring"];
     result.storeUrl = url;
 
     const translated = await translateText(result.appName, parsed.region);

@@ -397,14 +397,14 @@ function FeaturingView({
   return (
     <div>
       {rows.map((row, ri) => (
-        <div key={ri} className="flex gap-4 mb-4">
+        <div key={ri} className="flex gap-4 mb-4" style={{ maxHeight: 420 }}>
           {row.map(({ s, ratio }) => {
             const cover = s.images?.[0] || "";
             return (
               <div
                 key={s.id}
                 className="group relative cursor-pointer rounded-2xl overflow-hidden bg-white border border-[#e5e5e7] transition-all hover:border-[#999] hover:shadow-[0_4px_16px_rgba(0,0,0,0.08)] min-w-0 flex flex-col"
-                style={{ flex: `${ratio} 1 0%` }}
+                style={{ flex: `${ratio} 1 0%`, maxWidth: row.length === 1 ? "50%" : undefined }}
                 onClick={() => onOpenDetail(s.id)}
               >
                 <DeleteButton onDelete={() => onDelete(s.id)} />
