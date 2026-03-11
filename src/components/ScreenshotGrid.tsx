@@ -197,47 +197,6 @@ function GridCard({
   onOpenDetail: () => void;
   onDelete: () => void;
 }) {
-  const wrapRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const wrap = wrapRef.current;
-    if (!wrap) return;
-    const imgs = Array.from(
-      wrap.querySelectorAll("img")
-    ) as HTMLImageElement[];
-    if (imgs.length === 0) return;
-
-    const fitImages = () => {
-      const style = getComputedStyle(wrap);
-      const wrapW =
-        wrap.clientWidth -
-        parseFloat(style.paddingLeft) -
-        parseFloat(style.paddingRight);
-      const gap = 8;
-      const cols = Math.min(imgs.length, 3);
-      const imgW = Math.floor((wrapW - gap * (cols - 1)) / cols);
-      imgs.forEach((img) => {
-        img.style.width = imgW + "px";
-        img.style.objectFit = "cover";
-      });
-    };
-
-    let loaded = 0;
-    const total = imgs.length;
-    const onLoad = () => {
-      loaded++;
-      if (loaded >= total) fitImages();
-    };
-    imgs.forEach((img) => {
-      if (img.complete && img.naturalHeight > 0) onLoad();
-      else {
-        img.addEventListener("load", onLoad);
-        img.addEventListener("error", onLoad);
-      }
-    });
-    fitImages();
-  }, [set.images]);
-
   return (
     <div
       className="group relative bg-white rounded-2xl border border-[#e5e5e7] cursor-pointer overflow-hidden transition-all hover:border-[#999] hover:shadow-[0_4px_16px_rgba(0,0,0,0.08)]"
@@ -268,12 +227,12 @@ function GridCard({
           </div>
         </div>
       </div>
-      <div ref={wrapRef} className="px-2 pb-2 overflow-x-auto scrollbar-hide">
-        <div className="flex gap-2 flex-nowrap">
+      <div className="px-2 pb-2 overflow-x-auto scrollbar-hide h-[300px]">
+        <div className="flex gap-2 flex-nowrap h-full items-end">
           {(set.images || []).map((url, i) => (
             <img
               key={i}
-              className="h-auto shrink-0 rounded-[10px] object-cover"
+              className="h-full w-auto shrink-0 rounded-[10px]"
               src={url}
               alt={`${set.app_name} ${i + 1}`}
               loading="lazy"
