@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import { AssetSet } from "@/lib/supabase";
-import { normalizeType, BADGE_TYPE_MAP, BADGE_PLATFORM_MAP } from "@/lib/constants";
+import { normalizeType, BADGE_TYPE_MAP, BADGE_PLATFORM_MAP, getRegionBadgeClass } from "@/lib/constants";
 
 type Props = {
   set: AssetSet;
@@ -77,7 +77,7 @@ export default function DetailPage({
       <div className="max-w-[1400px] mx-auto p-6">
         {/* Meta badges */}
         <div className="flex gap-2 flex-wrap mb-5 items-center">
-          <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-[#1d1d1f] text-white">
+          <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold ${getRegionBadgeClass(set.region)}`}>
             {set.region}
           </span>
           {types.map((t) => {

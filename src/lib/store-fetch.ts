@@ -309,7 +309,7 @@ export async function fetchFromStore(
 
     // Filter iPhone screenshots (portrait, not too wide = not iPad)
     const iphoneScreenshots = screenshots.filter(
-      (s) => s.w < s.h && s.w >= 300 && s.w <= 1400 && s.h >= 500
+      (s) => s.w < s.h && s.w >= 600 && s.w <= 1400 && s.h >= 1000
     );
 
     if (iphoneScreenshots.length > 0) {

@@ -67,6 +67,34 @@ export const BADGE_TYPE_MAP: Record<string, string> = {
   Icons: "bg-pink-100 text-pink-700",
 };
 
+// Region colors - grouped by continent/area
+export const BADGE_REGION_MAP: Record<string, string> = {
+  // North America - blue
+  US: "bg-blue-600 text-white", CA: "bg-blue-500 text-white", MX: "bg-blue-400 text-white",
+  // Europe - indigo/violet
+  GB: "bg-indigo-600 text-white", DE: "bg-indigo-500 text-white", FR: "bg-violet-600 text-white",
+  IT: "bg-violet-500 text-white", ES: "bg-purple-600 text-white", NL: "bg-purple-500 text-white",
+  SE: "bg-indigo-400 text-white", CH: "bg-violet-400 text-white", NO: "bg-purple-400 text-white",
+  PL: "bg-indigo-300 text-indigo-900", RU: "bg-slate-600 text-white", TR: "bg-red-500 text-white",
+  // East Asia - rose/pink
+  CN: "bg-rose-600 text-white", JP: "bg-pink-600 text-white", KR: "bg-rose-500 text-white",
+  TW: "bg-pink-500 text-white", HK: "bg-rose-400 text-white", MO: "bg-pink-400 text-white",
+  // South/SE Asia - emerald/teal
+  IN: "bg-emerald-600 text-white", ID: "bg-teal-600 text-white", TH: "bg-emerald-500 text-white",
+  VN: "bg-teal-500 text-white", PH: "bg-emerald-400 text-white", SG: "bg-teal-400 text-white",
+  // Middle East - amber/orange
+  SA: "bg-amber-600 text-white", AE: "bg-orange-600 text-white", IL: "bg-amber-500 text-white",
+  // Oceania - cyan
+  AU: "bg-cyan-600 text-white", NZ: "bg-cyan-500 text-white",
+  // South America - lime/green
+  BR: "bg-lime-600 text-white", AR: "bg-green-600 text-white", CL: "bg-lime-500 text-white",
+  CO: "bg-green-500 text-white",
+};
+
+export function getRegionBadgeClass(region: string): string {
+  return BADGE_REGION_MAP[region] || "bg-gray-600 text-white";
+}
+
 export const BADGE_PLATFORM_MAP: Record<string, string> = {
   "App Store": "bg-sky-50 text-sky-700",
   "Play Store": "bg-emerald-50 text-emerald-700",

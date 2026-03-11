@@ -6,6 +6,7 @@ import {
   normalizeType,
   BADGE_TYPE_MAP,
   BADGE_PLATFORM_MAP,
+  getRegionBadgeClass,
 } from "@/lib/constants";
 import type { ViewMode } from "@/app/page";
 
@@ -149,7 +150,7 @@ function ListCard({
           </div>
         </div>
         <div className="flex items-center gap-1.5 flex-wrap mt-1.5">
-          <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-[#1d1d1f] text-white whitespace-nowrap">
+          <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold whitespace-nowrap ${getRegionBadgeClass(set.region)}`}>
             {set.region}
           </span>
           {types.map((t) => (
@@ -217,7 +218,7 @@ function GridCard({
               {set.app_name || "Untitled"}
             </span>
             <div className="flex gap-1 flex-wrap mt-0.5">
-              <span className="px-1.5 py-0.5 rounded-md text-[10px] font-bold bg-[#1d1d1f] text-white">
+              <span className={`px-1.5 py-0.5 rounded-md text-[10px] font-bold ${getRegionBadgeClass(set.region)}`}>
                 {set.region}
               </span>
               <span className="px-1.5 py-0.5 rounded-md text-[10px] font-bold bg-[#f5f5f7] text-[#86868b]">
