@@ -43,9 +43,9 @@ export function parseStoreUrl(url: string): ParsedURL {
     return result;
   }
 
-  // App Store event
+  // App Store event (matches both itsct= and eventid= parameters)
   const eventMatch = url.match(
-    /apps\.apple\.com\/([a-z]{2})\/app\/[^/]+\/id(\d+)\?.*?itsct=([a-zA-Z0-9_-]+)/i
+    /apps\.apple\.com\/([a-z]{2})\/app\/[^/]+\/id(\d+)\?.*?(?:itsct|eventid)=([a-zA-Z0-9_-]+)/i
   );
   if (eventMatch) {
     result.type = "event";
@@ -172,6 +172,91 @@ export async function fetchFromStore(
     }
 
     onStatus(`Fetched ${result.screenshots.length} featuring images for "${storyTitle}"`);
+    return result;
+  }
+
+  // --- Event flow ---
+  if (parsed.type === "event") {
+    const country = parsed.region.toLowerCase();
+    onStatus("Fetching in-app event...");
+
+    // Get app info first
+    const lookupUrl = `https://itunes.apple.com/lookup?id=${parsed.appId}&country=${country}`;
+    const lookupResp = await fetch(proxyUrl(lookupUrl));
+    const lookupData = await lookupResp.json();
+
+    if (lookupData.results && lookupData.results.length > 0) {
+      const app = lookupData.results[0];
+      result.appName = app.trackName || "";
+      result.iconUrl = app.artworkUrl512 || app.artworkUrl100 || "";
+      result.subtitle = app.subtitle || "";
+      result.category = app.primaryGenreName || "Other";
+    }
+
+    result.assetTypes = ["In-App Events"];
+    result.storeUrl = url;
+
+    const translated = await translateText(result.appName, parsed.region);
+    result.nameEn = translated;
+
+    // Scrape the event page for images
+    try {
+      const pageResp = await fetch(proxyUrl(parsed.storeUrl));
+      const pageHtml = await pageResp.text();
+
+      // Extract all unique mzstatic base paths from the page
+      // Matches URLs like: https://is1-ssl.mzstatic.com/image/thumb/HASH/SIZExSIZEsuffix.ext
+      const urlRegex = /https:\/\/is\d+-ssl\.mzstatic\.com\/image\/thumb\/([^"'\s);,]+?)\/(\d+)x(\d+)[a-z]*(?:-\d+)?\.(?:webp|jpg|png)/g;
+      let match;
+      const bases = new Map<string, { w: number; h: number }>();
+
+      while ((match = urlRegex.exec(pageHtml)) !== null) {
+        const basePath = match[1];
+        const w = parseInt(match[2]);
+        const h = parseInt(match[3]);
+        // Keep the largest version of each base
+        const existing = bases.get(basePath);
+        if (!existing || w * h > existing.w * existing.h) {
+          bases.set(basePath, { w, h });
+        }
+      }
+
+      // Also find template URLs with {w}x{h} placeholders
+      const tplRegex = /https:\/\/is\d+-ssl\.mzstatic\.com\/image\/thumb\/([^"'\s}]+?)\/\{w\}x\{h\}/g;
+      while ((match = tplRegex.exec(pageHtml)) !== null) {
+        const basePath = match[1];
+        if (!bases.has(basePath)) {
+          // Guess landscape for event cards, skip icons
+          if (basePath.includes("AppIcon")) continue;
+          bases.set(basePath, { w: 1200, h: 630 });
+        }
+      }
+
+      const allImages: { url: string; w: number; h: number }[] = [];
+      for (const [basePath, { w, h }] of bases) {
+        if (basePath.includes("AppIcon")) continue;
+        const imgUrl = `https://is1-ssl.mzstatic.com/image/thumb/${basePath}/${w}x${h}sr.webp`;
+        allImages.push({ url: imgUrl, w, h });
+      }
+
+      // Separate landscape (event card) and portrait (event detail) images
+      const eventImages = allImages.filter((s) => s.w > s.h && s.w >= 300);
+      const portraitImages = allImages.filter(
+        (s) => s.w < s.h && s.w >= 300 && s.h >= 500
+      );
+
+      // Event card first, then portrait detail
+      const combined = [...eventImages, ...portraitImages];
+      if (combined.length > 0) {
+        result.screenshots = combined.map((s) => s.url);
+      } else if (allImages.length > 0) {
+        result.screenshots = allImages.filter((s) => s.w >= 200).map((s) => s.url);
+      }
+    } catch {
+      // Page scraping failed
+    }
+
+    onStatus(`Fetched ${result.screenshots.length} event images for "${result.appName}"`);
     return result;
   }
 
